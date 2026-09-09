@@ -8,14 +8,19 @@ def load_instruction_samples(
     split: str = "train",
     sample_size: int = 25,
     seed: int = 42,
+    offset: int = 0,
 ) -> Dataset:
-    """Load a deterministic subset and normalize it to prompt/reference fields."""
-    dataset = load_dataset(dataset_name, split=split)
+    """Load a deterministic slice and normalize it to prompt/reference fields."""
     if sample_size <= 0:
         raise ValueError("sample_size must be positive")
+    if offset < 0:
+        raise ValueError("offset must be non-negative")
 
-    count = min(sample_size, len(dataset))
-    dataset = dataset.shuffle(seed=seed).select(range(count))
+    dataset = load_dataset(dataset_name, split=split)
+    dataset = dataset.shuffle(seed=seed)
+    start = min(offset, len(dataset))
+    stop = min(start + sample_size, len(dataset))
+    dataset = dataset.select(range(start, stop))
 
     required = {"instruction", "input", "output"}
     missing = required.difference(dataset.column_names)
