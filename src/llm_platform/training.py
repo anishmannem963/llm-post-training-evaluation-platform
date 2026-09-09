@@ -22,14 +22,17 @@ class ParameterStats:
 
 
 def to_prompt_completion_dataset(samples: Dataset) -> Dataset:
-    """Convert normalized baseline samples into TRL prompt-completion format."""
+    """Convert normalized samples into conversational TRL prompt-completion format."""
     required = {"prompt", "reference"}
     missing = required.difference(samples.column_names)
     if missing:
         raise ValueError(f"Samples are missing required columns: {sorted(missing)}")
 
     def convert(row: dict) -> dict:
-        return {"prompt": row["prompt"], "completion": row["reference"]}
+        return {
+            "prompt": [{"role": "user", "content": row["prompt"]}],
+            "completion": [{"role": "assistant", "content": row["reference"]}],
+        }
 
     return samples.map(convert, remove_columns=samples.column_names)
 
