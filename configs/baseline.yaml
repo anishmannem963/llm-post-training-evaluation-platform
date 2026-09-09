@@ -1,0 +1,15 @@
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  max_new_tokens: 128
+  temperature: 0.0
+  do_sample: false
+
+data:
+  dataset: yahma/alpaca-cleaned
+  split: train
+  sample_size: 25
+  seed: 42
+
+output:
+  predictions: outputs/baseline_predictions.jsonl
+  metrics: benchmarks/results/baseline_metrics.json
