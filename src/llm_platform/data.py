@@ -10,10 +10,10 @@ def load_instruction_samples(
     seed: int = 42,
 ) -> Dataset:
     """Load a deterministic subset and normalize it to prompt/reference fields."""
-    dataset = load_dataset(dataset_name, split=split)
     if sample_size <= 0:
         raise ValueError("sample_size must be positive")
 
+    dataset = load_dataset(dataset_name, split=split)
     count = min(sample_size, len(dataset))
     dataset = dataset.shuffle(seed=seed).select(range(count))
 
