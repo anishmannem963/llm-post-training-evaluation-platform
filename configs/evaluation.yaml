@@ -1,0 +1,17 @@
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  adapter_path: checkpoints/qwen2.5-0.5b-lora
+
+data:
+  dataset: yahma/alpaca-cleaned
+  split: train
+  sample_size: 100
+  seed: 42
+  offset: 500
+
+generation:
+  max_new_tokens: 128
+
+output:
+  predictions: outputs/base_vs_lora_predictions.jsonl
+  metrics: benchmarks/results/base_vs_lora_metrics.json

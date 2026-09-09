@@ -4,6 +4,7 @@ import time
 from dataclasses import dataclass
 
 import torch
+from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
@@ -23,12 +24,15 @@ def resolve_device() -> str:
 
 
 class BaseModelRunner:
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, adapter_path: str | None = None) -> None:
         self.device = resolve_device()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
-        self.model.to(self.device)
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+        if adapter_path:
+            model = PeftModel.from_pretrained(model, adapter_path)
+        self.model = model.to(self.device)
         self.model.eval()
+        self.adapter_path = adapter_path
 
     @torch.inference_mode()
     def generate(self, prompt: str, max_new_tokens: int = 128) -> GenerationResult:
