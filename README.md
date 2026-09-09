@@ -24,7 +24,7 @@ Default baseline:
 
 ### Iteration 2 — SFT + LoRA
 
-The post-training pipeline now adds:
+The post-training pipeline adds:
 
 - conversational prompt-completion formatting for TRL
 - completion-only supervised fine-tuning
@@ -43,6 +43,18 @@ Default LoRA smoke run:
 - Effective batch size: 8 through gradient accumulation
 - Maximum sequence length: 512
 
+### Iteration 3 — Held-out Base vs LoRA Evaluation
+
+The evaluation pipeline now:
+
+- reserves a deterministic held-out slice starting after the 500 training examples
+- loads either the untouched base model or the saved PEFT adapter
+- generates responses for the same 100 held-out prompts
+- measures token F1 and ROUGE-L F1 against references
+- measures mean/p95 latency and generated-token throughput
+- writes per-example predictions plus base, LoRA, and delta summaries
+- releases accelerator memory between model runs for 8 GB Apple Silicon machines
+
 ## Quick start
 
 ```bash
@@ -58,10 +70,16 @@ Run the untouched baseline:
 python scripts/run_baseline.py --config configs/baseline.yaml
 ```
 
-Run the LoRA smoke-training experiment:
+Train the LoRA adapter:
 
 ```bash
 python scripts/train_sft_lora.py --config configs/sft_lora.yaml
+```
+
+Evaluate the frozen base model against the trained adapter:
+
+```bash
+python scripts/evaluate_base_vs_lora.py --config configs/evaluation.yaml
 ```
 
 Training prints the number and percentage of trainable parameters before optimization. The final adapter and `training_metrics.json` are written under `checkpoints/qwen2.5-0.5b-lora/`.
@@ -71,14 +89,16 @@ Training prints the number and percentage of trainable parameters before optimiz
 Experiment artifacts are intentionally ignored by Git:
 
 - `outputs/baseline_predictions.jsonl`
+- `outputs/base_vs_lora_predictions.jsonl`
 - `benchmarks/results/baseline_metrics.json`
+- `benchmarks/results/base_vs_lora_metrics.json`
 - `checkpoints/`
 
 ## Roadmap
 
 - [x] Iteration 1: dataset + base-model inference + baseline benchmarking
 - [x] Iteration 2: supervised fine-tuning + LoRA training pipeline
-- [ ] Iteration 3: base-vs-adapter model-quality evaluation framework
+- [x] Iteration 3: held-out base-vs-adapter quality and systems evaluation
 - [ ] Iteration 4: preference optimization (DPO)
 - [ ] Iteration 5: quantization and efficiency benchmarking
 - [ ] Iteration 6: model serving API
